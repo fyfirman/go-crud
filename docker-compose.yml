@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: Dockerfile.golang
+    environment:
+      - MYSQL_HOST=database
+      - MYSQL_PORT=3306
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=go_crud_db
+    ports:
+      - 8090:8090
+    restart: always
+    volumes:
+      - ./files:/go/bin/files:z
+    depends_on:
+      - database
+    networks:
+      - app_network
+
+  database:
+    container_name: db-mariadb
+    image: mariadb:10.9.2
+    environment:
+      - MYSQL_DATABASE=go_crud_db
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - 3306:3306
+    restart: always
+    volumes:
+      - database_mysql:/var/lib/mysql
+    networks:
+      - app_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_container
+    depends_on:
+      - database
+    environment:
+      - PMA_HOST=database
+      - PMA_USER=root
+      - PMA_PORT=3306
+      - PMA_PASSWORD=root
+    ports:
+      - 9090:80
+    restart: always
+    networks:
+      - app_network
+
+volumes:
+  database_mysql:
+
+networks:
+  app_network:
+    driver: bridge
