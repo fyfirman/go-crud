@@ -32,10 +32,21 @@ func main() {
 	err := database.Connect(connectionString)
 	if err != nil {
 		log.Fatal("Error connecting to database")
-		panic(err.Error())
 	}
 
+	database.Connector.AutoMigrate(&User{})
+
 	log.Println("Starting the HTTP server on port 8090")
+
 	router := mux.NewRouter().StrictSlash(true)
+
+	userRouter := router.PathPrefix("/user").Subrouter()
+	userRouter.Path("").Methods(http.MethodPost).HandlerFunc(CreateUser)
+	userRouter.Path("").Methods(http.MethodGet).HandlerFunc(GetAllUsers)
+	userRouter.Path("/{id}").Methods(http.MethodPut).HandlerFunc(EditUser)
+	userRouter.Path("/{id}").Methods(http.MethodDelete).HandlerFunc(DeleteUser)
+
+	http.Handle("/", router)
+
 	log.Fatal(http.ListenAndServe(":8090", router))
 }
