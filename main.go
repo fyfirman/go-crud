@@ -8,9 +8,17 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load env from file
+	godotenv.Load(".env")
+	errEnv := godotenv.Load()
+	if errEnv != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	config := database.Config{
 		Host:     os.Getenv("MYSQL_HOST"),
 		Port:     os.Getenv("MYSQL_PORT"),
@@ -23,6 +31,7 @@ func main() {
 
 	err := database.Connect(connectionString)
 	if err != nil {
+		log.Fatal("Error connecting to database")
 		panic(err.Error())
 	}
 
